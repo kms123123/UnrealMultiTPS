@@ -33,4 +33,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsInAir = BlasterCharacter->GetCharacterMovement()->IsFalling();
 	//캐릭터 무브먼트를 얻고, 내장되어있는 가속 벡터를 얻은 뒤, 이것의 크기가 0보다 큰지 확인
 	bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
+	//캐릭터로부터 현재 무기를 장착하였는지 확인한다
+	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
 }
