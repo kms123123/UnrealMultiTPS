@@ -37,5 +37,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
 	//캐릭터 클래스의 bIsCrouched를 그대로 애님인스턴스 변수에 설정한다.
 	bIsCrouched = BlasterCharacter->bIsCrouched;
+	//캐릭터가 현재 조준 중인지 확인한다 
 	bAiming = BlasterCharacter->IsAiming();
 }
