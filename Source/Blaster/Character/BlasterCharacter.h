@@ -42,11 +42,14 @@ protected:
 	UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	UInputAction* EquipAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
+	UInputAction* CrouchAction;
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
 	void EquipButtonPressed();
+	void CrouchButtonPressed();
 private:	
 	UPROPERTY(VisibleAnywhere, Category="Camera")
 	USpringArmComponent* CameraBoom;

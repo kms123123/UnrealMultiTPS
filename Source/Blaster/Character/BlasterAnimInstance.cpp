@@ -35,4 +35,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
 	//캐릭터로부터 현재 무기를 장착하였는지 확인한다
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
+	//캐릭터 클래스의 bIsCrouched를 그대로 애님인스턴스 변수에 설정한다.
+	bIsCrouched = BlasterCharacter->bIsCrouched;
 }
