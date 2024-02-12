@@ -12,6 +12,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 ABlasterCharacter::ABlasterCharacter()
@@ -86,6 +87,8 @@ void ABlasterCharacter::BeginPlay()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	AimOffset(DeltaTime);
 }
 
 void ABlasterCharacter::Move(const FInputActionValue& Value)
@@ -159,6 +162,41 @@ void ABlasterCharacter::AimButtonReleased()
 	{
 		Combat->SetAiming(false);
 	}
+}
+
+void ABlasterCharacter::AimOffset(float DeltaTime)
+{
+	//무기가 없으면 리턴
+	if(Combat && Combat->EquippedWeapon == nullptr) return;
+
+	//현재의 속도와 공중에 떠있는 지 여부를 체크하여, AimOffset을 적용할지를 결정
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	float Speed = Velocity.Size();
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+
+	// Standing Still, not Jumping -> AimOffset 적용
+	// 움직이기 직전까지의 방향과 현재 가리키는 방향의 Delta를 계산하여, 이의 Yaw값을 설정해준다
+	// 이때는 컨트롤러에 의해 캐릭터의 방향이 바뀌지 않도록 한다
+	if(Speed == 0.f && !bIsInAir) 
+	{
+		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+		AO_Yaw = DeltaAimRotation.Yaw;
+		bUseControllerRotationYaw = false;
+	}
+	// Running or Jumping
+	// 움직이는 동안은 컨트롤러에 의해 캐릭터의 방향이 바뀌도록 한다
+	if(Speed > 0.f || bIsInAir)
+	{
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f;
+		bUseControllerRotationYaw = true;
+	}
+
+	// Pitch 회전값은 움직이는 것과 관계없이 항상 설정하도록 한다
+	AO_Pitch = GetBaseAimRotation().Pitch;
+	
 }
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
