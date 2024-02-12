@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "Blaster/BlasterComponent/CombatComponent.h"
 #include "Blaster/Weapon/Weapon.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -42,6 +43,9 @@ ABlasterCharacter::ABlasterCharacter()
 
 	//무브먼트 컴포넌트에서 Crouch를 가능하게한다.
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	//캡슐 컴포넌트에서 카메라에 대한 충돌을 무시하도록 하여, 캐릭터가 뒤로 지나갔을 때에 카메라가 순간적으로 움직이는 현상을 막는다.
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 }
 
 //리플리케이션 프로퍼티 적용
