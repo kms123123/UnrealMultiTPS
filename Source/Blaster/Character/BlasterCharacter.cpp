@@ -196,7 +196,16 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 	// Pitch 회전값은 움직이는 것과 관계없이 항상 설정하도록 한다
 	AO_Pitch = GetBaseAimRotation().Pitch;
-	
+
+	//클라이언트에서 발생하는 Pitch 값 문제 해결
+	if(AO_Pitch > 90.f && !IsLocallyControlled())
+	{
+		// map pitch from [270, 360) to [-90, 0)
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+		
+	}
 }
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
