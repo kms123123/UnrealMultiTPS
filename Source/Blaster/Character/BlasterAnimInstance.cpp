@@ -4,6 +4,7 @@
 #include "BlasterAnimInstance.h"
 
 #include "BlasterCharacter.h"
+#include "Blaster/Weapon/Weapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -36,6 +37,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
 	//캐릭터로부터 현재 무기를 장착하였는지 확인한다
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
+	//캐릭터로부터 무기변수를 가져온다
+	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 	//캐릭터 클래스의 bIsCrouched를 그대로 애님인스턴스 변수에 설정한다.
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 	//캐릭터가 현재 조준 중인지 확인한다 
@@ -57,4 +60,19 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
 	AO_Pitch = BlasterCharacter->GetAO_Pitch();
+
+	//FABRIK IK를 쓰기 위한 로직
+	//먼저 Weapon의 메쉬와 캐릭터의 메쉬에 접근 가능해야한다
+	if(bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
+	{
+		//GetSocketTransform을 통해 소켓의 월드 트랜스폼을 가져온다
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), RTS_World);
+		FVector OutPosition;
+		FRotator OutRotation;
+		//TransformToBoneSpace를 통해 특정 트랜스폼의 위치를 특정 본에 대한 본 space로 치환한다
+		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("Hand_R"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		//그렇게 치환한 위치와 회전정보를 트랜스폼에 저장한다
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+	}
 }
