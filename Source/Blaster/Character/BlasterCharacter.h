@@ -29,6 +29,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	//모든 컴포넌트가 Initialize되고 나서 실행되는 함수이다.
 	virtual void PostInitializeComponents() override;
+
+	void PlayFireMontage(bool bAiming);
 protected:
 	virtual void BeginPlay() override;
 
@@ -47,6 +49,8 @@ protected:
 	UInputAction* CrouchAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	UInputAction* AimAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
+	UInputAction* FireAction;
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -55,6 +59,8 @@ protected:
 	void CrouchButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void FireButtonPressed();
+	void FireButtonReleased();
 
 	void AimOffset(float DeltaTime);
 	
@@ -88,6 +94,9 @@ private:
 	
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
+
+	UPROPERTY(EditAnywhere, Category=Combat)
+	UAnimMontage* FireWeaponMontage;
 	
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);

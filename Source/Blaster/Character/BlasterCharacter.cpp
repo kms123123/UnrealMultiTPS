@@ -79,6 +79,23 @@ void ABlasterCharacter::PostInitializeComponents()
 	}
 }
 
+void ABlasterCharacter::PlayFireMontage(bool bAiming)
+{
+	//무기가 없으면 공격 몽타주 실행 X
+	if(Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	//메쉬로부터 애님 인스턴스를 가져온다
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if(AnimInstance && FireWeaponMontage)
+	{
+		//애님인스턴스에서 몽타주를 플레이하고, aiming 여부를 체크하여 섹션으로 점프한다
+		AnimInstance->Montage_Play(FireWeaponMontage);
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -181,6 +198,22 @@ void ABlasterCharacter::AimButtonReleased()
 	}
 }
 
+void ABlasterCharacter::FireButtonPressed()
+{
+	if(Combat)
+	{
+		Combat->FireButtonPressed(true);
+	}
+}
+
+void ABlasterCharacter::FireButtonReleased()
+{
+	if(Combat)
+	{
+		Combat->FireButtonPressed(false);
+	}
+}
+
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
 	//무기가 없으면 리턴
@@ -256,6 +289,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::CrouchButtonPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ABlasterCharacter::AimButtonPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ABlasterCharacter::AimButtonReleased);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ABlasterCharacter::FireButtonPressed);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ABlasterCharacter::FireButtonReleased);
 	}
 	
 }

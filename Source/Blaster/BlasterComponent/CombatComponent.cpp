@@ -52,6 +52,16 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonPressed = bPressed;
+	if(Character && bFireButtonPressed)
+	{
+		//공격 몽타주 로직 실행
+		Character->PlayFireMontage(bAiming);
+	}
+}
+
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 {
 	//클라이언트가 RPC 함수를 실행 -> 서버에서 값 바꿈 -> 그 변수는 리플리케이션 되어있으므로 그대로 리플리케이트되어 클라이언트에 반영
