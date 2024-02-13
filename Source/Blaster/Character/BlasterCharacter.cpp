@@ -50,6 +50,10 @@ ABlasterCharacter::ABlasterCharacter()
 
 	//Turning Enum 초기화
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+
+	//Net Update Frequency 변경
+	NetUpdateFrequency = 66.f;
+	MinNetUpdateFrequency = 33.f;
 }
 
 //리플리케이션 프로퍼티 적용
