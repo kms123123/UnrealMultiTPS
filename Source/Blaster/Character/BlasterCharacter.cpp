@@ -54,6 +54,9 @@ ABlasterCharacter::ABlasterCharacter()
 	//Net Update Frequency 변경
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
+
+	//회전 속도 변경
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 }
 
 //리플리케이션 프로퍼티 적용
@@ -124,7 +127,14 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 
 void ABlasterCharacter::Jump()
 {
-	Super::Jump();
+	if(bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Super::Jump();
+	}
 }
 
 void ABlasterCharacter::EquipButtonPressed()
