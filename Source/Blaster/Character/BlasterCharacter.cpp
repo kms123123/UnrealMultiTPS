@@ -180,13 +180,17 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 	// Standing Still, not Jumping -> AimOffset 적용
 	// 움직이기 직전까지의 방향과 현재 가리키는 방향의 Delta를 계산하여, 이의 Yaw값을 설정해준다
-	// 이때는 컨트롤러에 의해 캐릭터의 방향이 바뀌지 않도록 한다
+	// Rotate RootBone을 통해서 루트본 회전을 할 것이므로, 컨트롤러에 의해 회전이 바뀌어도 된다.
 	if(Speed == 0.f && !bIsInAir) 
 	{
 		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
-		bUseControllerRotationYaw = false;
+		if(TurningInPlace == ETurningInPlace::ETIP_NotTurning)
+		{
+			InterpAO_Yaw = AO_Yaw;
+		}
+		bUseControllerRotationYaw = true;
 		TurnInPlace(DeltaTime);
 	}
 	// Running or Jumping
@@ -260,6 +264,17 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 	else if(AO_Yaw < -90.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Left;
+	}
+	
+	if(TurningInPlace != ETurningInPlace::ETIP_NotTurning)
+	{
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
+		AO_Yaw = InterpAO_Yaw;
+		if(FMath::Abs(AO_Yaw) < 15.f)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		}
 	}
 }
 
