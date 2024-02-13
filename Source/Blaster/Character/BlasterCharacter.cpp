@@ -47,6 +47,9 @@ ABlasterCharacter::ABlasterCharacter()
 	//캡슐 컴포넌트에서 카메라에 대한 충돌을 무시하도록 하여, 캐릭터가 뒤로 지나갔을 때에 카메라가 순간적으로 움직이는 현상을 막는다.
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+
+	//Turning Enum 초기화
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
 //리플리케이션 프로퍼티 적용
@@ -184,6 +187,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
 		bUseControllerRotationYaw = false;
+		TurnInPlace(DeltaTime);
 	}
 	// Running or Jumping
 	// 움직이는 동안은 컨트롤러에 의해 캐릭터의 방향이 바뀌도록 한다
@@ -192,6 +196,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		bUseControllerRotationYaw = true;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
 	// Pitch 회전값은 움직이는 것과 관계없이 항상 설정하도록 한다
@@ -242,6 +247,19 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	if(Combat)
 	{
 		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
+
+void ABlasterCharacter::TurnInPlace(float DeltaTime)
+{
+	//AO_Yaw값을 실시간으로 체크해서 AimOffset 범위를 넘어갔을 경우, enum 값을 바꿔준다.
+	if(AO_Yaw > 90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Right;
+	}
+	else if(AO_Yaw < -90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Left;
 	}
 }
 
