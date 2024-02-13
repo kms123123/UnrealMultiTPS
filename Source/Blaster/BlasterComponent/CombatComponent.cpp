@@ -19,6 +19,15 @@ UCombatComponent::UCombatComponent()
 	AimWalkSpeed = 450.f;
 }
 
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//무기 변수가 리플리케이션 되어 애님 인스턴스에서 이 값을 클라이언트도 전달받을 수 있다.
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, bAiming);
+}
+
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -56,8 +65,21 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
 
+	if(bFireButtonPressed)
+	{
+		ServerFire();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation()
+{
+	MulticastFire();
+}
+
+void UCombatComponent::MulticastFire_Implementation()
+{
 	if(EquippedWeapon == nullptr) return;
-	if(Character && bFireButtonPressed)
+	if(Character)
 	{
 		//공격 몽타주 로직 실행
 		Character->PlayFireMontage(bAiming);
@@ -83,14 +105,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	//무기 변수가 리플리케이션 되어 애님 인스턴스에서 이 값을 클라이언트도 전달받을 수 있다.
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
-	DOREPLIFETIME(UCombatComponent, bAiming);
-}
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
