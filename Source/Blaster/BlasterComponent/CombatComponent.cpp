@@ -55,10 +55,13 @@ void UCombatComponent::OnRep_EquippedWeapon()
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
+
+	if(EquippedWeapon == nullptr) return;
 	if(Character && bFireButtonPressed)
 	{
 		//공격 몽타주 로직 실행
 		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire();
 	}
 }
 
