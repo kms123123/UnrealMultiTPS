@@ -10,6 +10,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/HUD/BlasterHUD.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -38,6 +40,46 @@ void UCombatComponent::BeginPlay()
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	}
+}
+
+void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	SetHUDCrosshairs(DeltaTime);
+}
+
+void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
+{
+	if(Character == nullptr || Character->Controller == nullptr) return;
+	
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if(Controller)
+	{
+		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD;
+		if(HUD)
+		{
+			FHUDPackage HUDPackage;
+			if(EquippedWeapon)
+			{
+				HUDPackage.CrosshairCenter = EquippedWeapon->CrosshairCenter;
+				HUDPackage.CrosshairBottom = EquippedWeapon->CrosshairBottom;
+				HUDPackage.CrosshairLeft = EquippedWeapon->CrosshairLeft;
+				HUDPackage.CrosshairRight = EquippedWeapon->CrosshairRight;
+				HUDPackage.CrosshairTop = EquippedWeapon->CrosshairTop;
+			}
+			else
+			{
+				HUDPackage.CrosshairCenter = nullptr;
+				HUDPackage.CrosshairBottom = nullptr;
+				HUDPackage.CrosshairLeft = nullptr;
+				HUDPackage.CrosshairRight = nullptr;
+				HUDPackage.CrosshairTop = nullptr;
+			}
+			HUD->SetHUDPackage(HUDPackage);
+		}
+	}
+	
 }
 
 void UCombatComponent::SetAiming(bool bIsAiming)
@@ -116,6 +158,8 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	}
 }
 
+
+
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	MulticastFire(TraceHitTarget);
@@ -143,11 +187,6 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
-}
-
-void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 

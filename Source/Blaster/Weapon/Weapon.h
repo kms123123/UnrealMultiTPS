@@ -32,6 +32,25 @@ public:
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
 	
+	/**
+	 * Weapon 마다 다르게 설정할 크로스헤어 텍스처
+	 */
+
+	UPROPERTY(EditAnywhere, Category=Crosshair)
+	UTexture2D* CrosshairCenter;
+
+	UPROPERTY(EditAnywhere, Category=Crosshair)
+	UTexture2D* CrosshairTop;
+
+	UPROPERTY(EditAnywhere, Category=Crosshair)
+	UTexture2D* CrosshairBottom;
+
+	UPROPERTY(EditAnywhere, Category=Crosshair)
+	UTexture2D* CrosshairLeft;
+	
+	UPROPERTY(EditAnywhere, Category=Crosshair)
+	UTexture2D* CrosshairRight;
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -63,6 +82,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACasing> CasingClass;
+
+	
+	
 	
 public:	
 	void SetWeaponState(EWeaponState State);

@@ -8,6 +8,8 @@
 
 #define TRACE_LENGTH 80000.f
 
+class ABlasterHUD;
+class ABlasterPlayerController;
 class AWeapon;
 class ABlasterCharacter;
 
@@ -43,10 +45,14 @@ protected:
 	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
+	void SetHUDCrosshairs(float DeltaTime);
 	
 private:
 
 	ABlasterCharacter* Character;
+	ABlasterPlayerController* Controller;
+	ABlasterHUD* HUD;
 
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
