@@ -215,6 +215,14 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	if(bScreenToWorld)
 	{
 		FVector Start = CrosshairWorldPosition;
+
+		//Trace 시작 지점을 캐릭터 살짝 앞으로 옮겨 버그 해결
+		if(Character)
+		{
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
+		}
+		
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 
 		//전방으로 길게 LineTrace를 쏜다

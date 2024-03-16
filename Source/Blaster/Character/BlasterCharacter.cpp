@@ -119,6 +119,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	AimOffset(DeltaTime);
+	HideCameraIfCharacterClose();
 }
 
 void ABlasterCharacter::Move(const FInputActionValue& Value)
@@ -328,6 +329,33 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		}
 	}
+}
+
+void ABlasterCharacter::HideCameraIfCharacterClose()
+{
+	// 로컬 플레이어에만 이루어져야 하므로, 로컬로 컨트롤 되지 않는 캐릭터는 무시
+	if(!IsLocallyControlled()) return;
+
+	// 카메라 컴포넌트와 액터 컴포넌트의 거리가 일정거리 이하일때,
+	if((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
+	{
+		// 메쉬가 안보이도록 하고,
+		GetMesh()->SetVisibility(false);
+		// weaponmesh의 bOwnerNoSee를 true로 만들어 Owner에게 안보이도록 한다.
+		if(Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if(Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+	}
+	
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
