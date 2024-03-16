@@ -5,7 +5,6 @@
 
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Weapon/Weapon.h"
-#include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,7 +18,7 @@ UCombatComponent::UCombatComponent()
 
 	//속도 수치 설정
 	BaseWalkSpeed = 600.f;
-	AimWalkSpeed = 450.f;
+	AimWalkSpeed = 450.f;	bCanFire = true;
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -34,6 +33,8 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+
 
 	//게임 시작 시 BaseWalkSpeed로 이동속도 설정
 	if(Character)
@@ -117,6 +118,15 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
 			}
 
+			if(bAimAtEnemy)
+			{
+				CrosshairEnemyFactor = FMath::FInterpTo(CrosshairEnemyFactor, 0.4f, DeltaTime, 20.f);
+			}
+			else
+			{				
+				CrosshairEnemyFactor = FMath::FInterpTo(CrosshairEnemyFactor, 0.f, DeltaTime, 20.f);
+			}
+
 			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 40.f);
 			
 			HUDPackage.CrosshairSpread =
@@ -124,7 +134,8 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				CrosshairVelocityFactor +
 				CrosshairInAirFactor -
 				CrosshairAimFactor +
-				CrosshairShootingFactor;
+				CrosshairShootingFactor -
+				CrosshairEnemyFactor;
 			
 			HUD->SetHUDPackage(HUDPackage);
 		}
@@ -151,6 +162,28 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 	}
 }
 
+void UCombatComponent::StartFireTimer()
+{
+	if(EquippedWeapon == nullptr || Character == nullptr) return;
+
+	Character->GetWorldTimerManager().SetTimer(
+		FireTimer,
+		this,
+		&UCombatComponent::FireTimerFinished,
+		EquippedWeapon->FireDelay
+	);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if(EquippedWeapon == nullptr) return;
+	bCanFire = true;
+	if(bFireButtonPressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
+	}
+}
+
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;
@@ -173,20 +206,29 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
-void UCombatComponent::FireButtonPressed(bool bPressed)
+void UCombatComponent::Fire()
 {
-	bFireButtonPressed = bPressed;
-
-	if(bFireButtonPressed)
+	if(bCanFire)
 	{
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
-		ServerFire(HitResult.ImpactPoint);
-
+		bCanFire = false;
+		ServerFire(HitTarget);
 		if(EquippedWeapon)
 		{
 			CrosshairShootingFactor = 0.75f;
 		}
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	if(EquippedWeapon == nullptr) return;
+	
+	bFireButtonPressed = bPressed;
+
+	if(bFireButtonPressed)
+	{
+		Fire();
 	}
 }
 
@@ -241,11 +283,13 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		//Crosshair 인터페이스가 감지될 경우 크로스헤어를 빨간색으로 변경
 		 if(TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairInterface>())
 		 {
-			 HUDPackage.CrosshairColor = FLinearColor::Red;
+		 	HUDPackage.CrosshairColor = FLinearColor::Red;
+		 	bAimAtEnemy = true;
 		 }
 		 else
 		 {
-			 HUDPackage.CrosshairColor = FLinearColor::White;
+		 	HUDPackage.CrosshairColor = FLinearColor::White;
+		 	bAimAtEnemy = false;
 		 }
 	}
 }

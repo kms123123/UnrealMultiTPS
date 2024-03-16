@@ -45,5 +45,8 @@ private:
 	UParticleSystem* ImpactParticle;
 
 	UPROPERTY(EditAnywhere)
+	UParticleSystem* PlayerHitParticle;
+
+	UPROPERTY(EditAnywhere)
 	USoundCue* ImpactSound;
 };

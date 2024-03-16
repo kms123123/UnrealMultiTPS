@@ -338,15 +338,15 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
-	// Pitch 회전값은 움직이는 것과 관계없이 항상 설정하도록 한다
-	AO_Pitch = GetBaseAimRotation().Pitch;
-
 	//클라이언트에서 발생하는 Pitch 값 문제 해결
 	CalculateAO_Pitch();
 }
 
 void ABlasterCharacter::CalculateAO_Pitch()
 {
+	// Pitch 회전값은 움직이는 것과 관계없이 항상 설정하도록 한다
+	AO_Pitch = GetBaseAimRotation().Pitch;
+	
 	if(AO_Pitch > 90.f && !IsLocallyControlled())
 	{
 		// map pitch from [270, 360) to [-90, 0)
