@@ -45,6 +45,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bAiming = BlasterCharacter->IsAiming();
 	//캐릭터가 현재 회전중인지 확인한다
 	TurningInPlace = BlasterCharacter->GetTurningInPlace();
+	//캐릭터가 루트 본 회전을 사용해야 되는지 확인한다
+	bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
 
 	//GetBaseAimRotation은 폰의 AimRotation을 반환하는데, 이는 곧 컨트롤러가 보는 방향을 말한다.
 	FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();
