@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
+#include "Blaster/Interface/InteractWithCrosshairInterface.h"
 #include "BlasterCharacter.generated.h"
 
 class UCombatComponent;
@@ -17,7 +18,7 @@ class UInputAction;
 struct FInputActionValue;
 
 UCLASS()
-class BLASTER_API ABlasterCharacter : public ACharacter
+class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairInterface
 {
 	GENERATED_BODY()
 

@@ -47,6 +47,11 @@ ABlasterCharacter::ABlasterCharacter()
 	//캡슐 컴포넌트에서 카메라에 대한 충돌을 무시하도록 하여, 캐릭터가 뒤로 지나갔을 때에 카메라가 순간적으로 움직이는 현상을 막는다.
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	//LineTrace에 막혀야 하므로 Visibility 채널에는 Block으로 설정한다.
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+
+	//회전 속도 변경
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 
 	//Turning Enum 초기화
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
@@ -55,8 +60,6 @@ ABlasterCharacter::ABlasterCharacter()
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
 
-	//회전 속도 변경
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
 }
 
 //리플리케이션 프로퍼티 적용

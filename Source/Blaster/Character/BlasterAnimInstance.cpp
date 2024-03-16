@@ -78,12 +78,13 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
 
 		//총이 가리키는 방향이 자연스럽게 FindLookAtRotation을 이용해 오른손으로부터 타겟의 회전값을 오른손에 설정해준다.
-		//이는 로컬에서만 사용하도록 설정
+		//이는 로컬에서만 사용하도록 설정 (Bandwidth 낭비 X)
 		if(BlasterCharacter->IsLocallyControlled())
 		{
 			bLocallyControlled = true;
 			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("Hand_R"), RTS_World);
-			RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
+			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
+			RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaSeconds, 30.f);
 		}
 	}
 }
