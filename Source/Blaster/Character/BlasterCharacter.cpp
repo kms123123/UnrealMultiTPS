@@ -7,6 +7,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Blaster/Blaster.h"
 #include "Blaster/BlasterComponent/CombatComponent.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Components/CapsuleComponent.h"
@@ -46,6 +47,8 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	//캡슐 컴포넌트에서 카메라에 대한 충돌을 무시하도록 하여, 캐릭터가 뒤로 지나갔을 때에 카메라가 순간적으로 움직이는 현상을 막는다.
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	//메쉬의 콜리전 채널을 커스텀채널로 설정해준다.
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	//LineTrace에 막혀야 하므로 Visibility 채널에는 Block으로 설정한다.
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -97,6 +100,27 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+void ABlasterCharacter::PlayHitReactMontage()
+{
+	//무기가 없으면 공격 몽타주 실행 X
+	if(Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	//메쉬로부터 애님 인스턴스를 가져온다
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if(AnimInstance && HitReactMontage)
+	{
+		//애님인스턴스에서 몽타주를 플레이하고, aiming 여부를 체크하여 섹션으로 점프한다
+		AnimInstance->Montage_Play(HitReactMontage);
+		FName SectionName("FromFront");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ABlasterCharacter::MulticastHit_Implementation()
+{
+	PlayHitReactMontage();
 }
 
 void ABlasterCharacter::BeginPlay()

@@ -32,6 +32,10 @@ public:
 	virtual void PostInitializeComponents() override;
 
 	void PlayFireMontage(bool bAiming);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -64,6 +68,9 @@ protected:
 	void FireButtonReleased();
 
 	void AimOffset(float DeltaTime);
+
+	void PlayHitReactMontage();
+
 	
 private:	
 	UPROPERTY(VisibleAnywhere, Category="Camera")
@@ -99,6 +106,9 @@ private:
 	UPROPERTY(EditAnywhere, Category=Combat)
 	UAnimMontage* FireWeaponMontage;
 
+	UPROPERTY(EditAnywhere, Category=Combat)
+	UAnimMontage* HitReactMontage;
+	
 	void HideCameraIfCharacterClose();
 
 	UPROPERTY(EditAnywhere)

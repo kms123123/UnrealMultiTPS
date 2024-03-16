@@ -7,6 +7,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/Blaster.h"
 
 AProjectile::AProjectile()
 {
@@ -25,6 +27,9 @@ AProjectile::AProjectile()
 	//visibility, worldstatic 채널만 부딪히게 설정
 	CollisionBox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	// 캐릭터와도 부딪히게 SkeletalMesh(커스텀) 채널에 대해서도 부딪힘
+	// 원통 콜라이더도 폰 채널이기 때문에, 커스텀 채널을 따로 사용한다.
+	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECR_Block);
 	
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	//움직이는 방향에 맞춰 회전도 변하도록 설정
@@ -74,6 +79,12 @@ void AProjectile::Destroyed()
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                         FVector NormalImpulse, const FHitResult& Hit)
 {
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if(BlasterCharacter)
+	{
+		BlasterCharacter->MulticastHit();
+	}
+	
 	Destroy();
 }
 
