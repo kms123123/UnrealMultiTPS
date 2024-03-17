@@ -31,10 +31,12 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	//모든 컴포넌트가 Initialize되고 나서 실행되는 함수이다.
 	virtual void PostInitializeComponents() override;
-
 	void PlayFireMontage(bool bAiming);
-
+	void PlayElimMontage();
 	virtual void OnRep_ReplicatedMovement() override;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Elim();
 
 protected:
 	virtual void BeginPlay() override;
@@ -113,6 +115,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Combat)
 	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditAnywhere, Category=Combat)
+	UAnimMontage* ElimMontage;
 	
 	void HideCameraIfCharacterClose();
 
@@ -141,6 +146,8 @@ private:
 	void OnRep_Health();
 
 	ABlasterPlayerController* BlasterPlayerController;
+
+	bool bElimmed = false;
 	
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
@@ -153,6 +160,7 @@ public:
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
 	FORCEINLINE bool ShouldRotateRootBone() const {return bRotateRootBone;}
+	FORCEINLINE bool IsElimmed() const {return bElimmed;}
 };
 
 
