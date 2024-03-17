@@ -120,12 +120,41 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
-void ABlasterCharacter::MulticastHit_Implementation()
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatorController, AActor* DamageCauser)
 {
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
 	PlayHitReactMontage();
+
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(DamagedActor);
+	// if(BlasterCharacter)
+	// {
+	// 	if(PlayerHitParticle)
+	// 	{
+	// 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerHitParticle, GetActorTransform());
+	// 	}
+	// }
+	// else
+	// {
+	// 	//벽 파티클 소환
+	// 	if(ImpactParticle)
+	// 	{
+	// 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorTransform());
+	// 	}
+	// }
 }
 
-void ABlasterCharacter::OnRep_ReplicatedMovement()
+void ABlasterCharacter::UpdateHUDHealth()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if(BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::OnRep_ReplicatedMovement() 
 {
 	Super::OnRep_ReplicatedMovement();
 
@@ -147,10 +176,10 @@ void ABlasterCharacter::BeginPlay()
 		}
 	}
 
-	BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
-	if(BlasterPlayerController)
+	UpdateHUDHealth();
+	if(HasAuthority())
 	{
-		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
 }
 
@@ -464,7 +493,8 @@ float ABlasterCharacter::CalculateSpeed()
 
 void ABlasterCharacter::OnRep_Health()
 {
-	
+	UpdateHUDHealth();
+	PlayHitReactMontage();
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)

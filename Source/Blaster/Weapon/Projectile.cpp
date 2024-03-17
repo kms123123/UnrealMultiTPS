@@ -63,6 +63,11 @@ void AProjectile::BeginPlay()
 void AProjectile::Destroyed()
 {
 	Super::Destroyed();
+	//벽 파티클 소환
+	if(ImpactParticle)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorTransform());
+	}
 
 	//사운드 재생
 	if(ImpactSound)
@@ -74,25 +79,6 @@ void AProjectile::Destroyed()
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                         FVector NormalImpulse, const FHitResult& Hit)
 {
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
-	if(BlasterCharacter)
-	{
-		BlasterCharacter->MulticastHit();
-
-		if(PlayerHitParticle)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PlayerHitParticle, GetActorTransform());
-		}
-	}
-	else
-	{
-		//벽 파티클 소환
-		if(ImpactParticle)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorTransform());
-		}
-	}
-
 	Destroy();
 }
 
