@@ -8,6 +8,7 @@
 #include "Blaster/Interface/InteractWithCrosshairInterface.h"
 #include "BlasterCharacter.generated.h"
 
+class ABlasterPlayerController;
 class UCombatComponent;
 class AWeapon;
 class UWidgetComponent;
@@ -138,7 +139,8 @@ private:
 	
 	UFUNCTION()
 	void OnRep_Health();
-	
+
+	ABlasterPlayerController* BlasterPlayerController;
 	
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
