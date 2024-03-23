@@ -201,6 +201,13 @@ void UCombatComponent::OnRep_EquippedWeapon()
 {
 	if(EquippedWeapon && Character)
 	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		//메쉬를 통해 소켓을 가져올 수 있다.
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if(HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 	}

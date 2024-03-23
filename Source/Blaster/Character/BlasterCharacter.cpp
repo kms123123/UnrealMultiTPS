@@ -15,8 +15,11 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -178,6 +181,10 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 // 서버에서만 실행되는 함수
 void ABlasterCharacter::Elim()
 {
+	if(Combat && Combat->EquippedWeapon)
+	{ 
+		Combat->EquippedWeapon->Dropped();
+	}
 	MulticastElim();
 	// 리스폰 타이머를 맞춘다.
 	GetWorldTimerManager().SetTimer(
@@ -193,6 +200,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	bElimmed = true;
 	PlayElimMontage();
 
+	// Start dissolve effect
 	if(DissolveMaterialInstance)
 	{
 		// 저장되어있는 매터리얼 인스턴스를 통해 새로운 다이나믹 인스턴스를 만든다.
@@ -204,6 +212,38 @@ void ABlasterCharacter::MulticastElim_Implementation()
 		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
 	}
 	StartDissolve();
+
+	// Disable character movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if(BlasterPlayerController)
+	{
+		DisableInput(BlasterPlayerController); 
+	}
+
+	// Disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Spawn ElimBot
+	if(ElimBotEffect)
+	{
+		FVector ElimBotSpawnPoint(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 200.f);
+		ElimBotComponent = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			ElimBotEffect,
+			ElimBotSpawnPoint,
+			GetActorRotation()
+		);
+	}
+	if(ElimBotSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			ElimBotSound,
+			GetActorLocation()
+		);
+	}
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -212,6 +252,17 @@ void ABlasterCharacter::ElimTimerFinished()
 	if(BlasterGameMode)
 	{
 		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+
+}
+
+void ABlasterCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	if(ElimBotComponent)
+	{
+		ElimBotComponent->DestroyComponent();
 	}
 }
 

@@ -31,6 +31,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
+	void Dropped();
 	
 	/**
 	 * Weapon 마다 다르게 설정할 크로스헤어 텍스처
