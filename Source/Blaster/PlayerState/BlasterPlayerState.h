@@ -17,10 +17,34 @@ class BLASTER_API ABlasterPlayerState : public APlayerState
 	GENERATED_BODY()
 
 public:
-	virtual void OnRep_Score() override;
-	void AddToScore(float ScoreAmount);
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	/**
+	 * Replication notifies
+	 */
 	
+	virtual void OnRep_Score() override;
+	UFUNCTION()
+	virtual void OnRep_Defeats();
+	UFUNCTION()
+	virtual void OnRep_bIsElim();
+	
+	void AddToScore(float ScoreAmount);
+	void AddToDefeats(int32 DefeatsAmount);
 private:
+
+	// UPROPERTY는 포인터가 nullptr로 초기화되게 하는 효과도 있다.
+	UPROPERTY()
 	ABlasterCharacter* Character;
+	UPROPERTY()
 	ABlasterPlayerController* Controller;
+
+	UPROPERTY(ReplicatedUsing=OnRep_Defeats)
+	int32 Defeats;
+
+	UPROPERTY(ReplicatedUsing=OnRep_bIsElim)
+	bool bIsElim;
+public:
+	void SetElim(bool flag);
+
 };

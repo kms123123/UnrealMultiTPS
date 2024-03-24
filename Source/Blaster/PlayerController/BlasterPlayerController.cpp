@@ -40,6 +40,35 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 	}
 }
 
+void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->DefeatsAmount;
+	if(bHUDValid)
+	{
+		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
+		BlasterHUD->CharacterOverlay->DefeatsAmount->SetText(FText::FromString(DefeatsText));
+	}
+}
+
+void ABlasterPlayerController::SetHUDElimText(bool Active)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->ElimText;
+	
+	if(bHUDValid)
+	{
+		FString ElimString = Active ? FString("You Were Eliminated!") : FString("");
+		BlasterHUD->CharacterOverlay->ElimText->SetText(FText::FromString(ElimString));
+	}
+}
+
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);

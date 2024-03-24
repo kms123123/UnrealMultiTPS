@@ -11,13 +11,18 @@
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController,
                                         ABlasterPlayerController* AttackerController)
 {
-	// 점수 추가
+	// 점수 및 패배 추가
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	ABlasterPlayerState* VictimPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
 
 	if(AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
+	}
+	if(VictimPlayerState)
+	{
+		VictimPlayerState->AddToDefeats(1);
+		VictimPlayerState->SetElim(true);
 	}
 
 	// 게임캐릭터 제거
@@ -41,5 +46,10 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController*
 		UGameplayStatics::GetAllActorsOfClass(this, APlayerStart::StaticClass(), PlayerStarts);
 		int32 Selection = FMath::RandRange(0, PlayerStarts.Num() - 1);
 		RestartPlayerAtPlayerStart(ElimmedController, PlayerStarts[Selection]);
+		ABlasterPlayerState* ElimmedPlayerState = Cast<ABlasterPlayerState>(ElimmedController->PlayerState);
+		if(ElimmedPlayerState)
+		{
+			ElimmedPlayerState->SetElim(false);
+		}
 	}
 }
