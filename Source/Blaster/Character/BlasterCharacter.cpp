@@ -11,6 +11,7 @@
 #include "Blaster/BlasterComponent/CombatComponent.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
@@ -170,6 +171,20 @@ void ABlasterCharacter::UpdateHUDHealth()
 	}
 }
 
+void ABlasterCharacter::PollInit()
+{
+	// PlayerState는 BeginPlay에서 initialize가 되지않는다. (할당되는데 1~2 프레임 소요)
+	// 따라서, Tick에서 최대한 빠르게 initialize해준다.
+	if(BlasterPlayerState == nullptr)
+	{
+		BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+		if(BlasterPlayerState)
+		{
+			BlasterPlayerState->AddToScore(0.f);
+		}
+	}
+}
+
 void ABlasterCharacter::OnRep_ReplicatedMovement() 
 {
 	Super::OnRep_ReplicatedMovement();
@@ -306,6 +321,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		CalculateAO_Pitch();
 	}
 	HideCameraIfCharacterClose();
+	PollInit();
 }
 
 void ABlasterCharacter::Move(const FInputActionValue& Value)

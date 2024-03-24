@@ -9,6 +9,7 @@
 #include "Components/TimelineComponent.h"
 #include "BlasterCharacter.generated.h"
 
+class ABlasterPlayerState;
 class USoundCue;
 class ABlasterPlayerController;
 class UCombatComponent;
@@ -82,6 +83,9 @@ protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
+
+	// Poll for any relevant classes and initialize
+	void PollInit();
 	
 private:	
 	UPROPERTY(VisibleAnywhere, Category="Camera")
@@ -198,6 +202,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	USoundCue* ElimBotSound;
+
+	ABlasterPlayerState* BlasterPlayerState;
 	
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
