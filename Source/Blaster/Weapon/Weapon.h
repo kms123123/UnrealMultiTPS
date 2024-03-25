@@ -9,6 +9,8 @@
 class ACasing;
 class UWidgetComponent;
 class USphereComponent;
+class ABlasterCharacter;
+class ABlasterPlayerController;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -29,6 +31,8 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Owner() override;
+	void SetHUDAmmo();
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
 	void Dropped();
@@ -103,8 +107,21 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACasing> CasingClass;
 
+	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_Ammo)
+	int32 Ammo;
+
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
 	
-	
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+
+	UPROPERTY()
+	ABlasterCharacter* BlasterOwnerCharacter;
+	UPROPERTY()
+	ABlasterPlayerController* BlasterOwnerController;
 	
 public:	
 	void SetWeaponState(EWeaponState State);

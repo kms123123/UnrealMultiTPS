@@ -336,7 +336,12 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if(Character == nullptr || WeaponToEquip == nullptr) return;
-
+	// 이미 총을 가지고 있는 상태면 그걸 떨어뜨린다.
+	if(EquippedWeapon)
+	{
+		EquippedWeapon->Dropped();
+	}
+	
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 	//메쉬를 통해 소켓을 가져올 수 있다.
@@ -346,6 +351,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
 	EquippedWeapon->SetOwner(Character);
+	EquippedWeapon->SetHUDAmmo();
 
 	//무기를 들 때부터 움직임에 따라 몸의 방향이 바뀌지 않고 컨트롤러의 회전에 따라 바뀌도록 한다
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
