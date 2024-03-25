@@ -35,6 +35,7 @@ public:
 	//모든 컴포넌트가 Initialize되고 나서 실행되는 함수이다.
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMontage();
 	void PlayElimMontage();
 	virtual void OnRep_ReplicatedMovement() override;
 	void Elim();
@@ -63,12 +64,15 @@ protected:
 	UInputAction* AimAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	UInputAction* FireAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
+	UInputAction* ReloadAction;
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
 	void EquipButtonPressed();
 	void CrouchButtonPressed();
+	void ReloadButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void FireButtonPressed();
@@ -118,9 +122,16 @@ private:
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
 
+	/**
+	 * Animation Montages
+	 */
+	
 	UPROPERTY(EditAnywhere, Category=Combat)
 	UAnimMontage* FireWeaponMontage;
 
+	UPROPERTY(EditAnywhere, Category=Combat)
+	UAnimMontage* ReloadMontage;
+	
 	UPROPERTY(EditAnywhere, Category=Combat)
 	UAnimMontage* HitReactMontage;
 
