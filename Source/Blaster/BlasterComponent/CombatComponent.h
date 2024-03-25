@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Components/ActorComponent.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 #include "CombatComponent.generated.h"
 
 #define TRACE_LENGTH 80000.f
@@ -117,6 +118,21 @@ private:
 	void FireTimerFinished();
 
 	bool CanFire();
+
+	// Carried Ammo for the currently-equipped weapon
+	UPROPERTY(ReplicatedUsing=OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
+
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+
+	// 해쉬를 사용하므로, 리플리케이션이 적용 불가하다.
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingARAmmo = 30;
+
+	void InitializeCarriedAmmo();
 	
 public:	
 
