@@ -28,6 +28,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	//무기 변수가 리플리케이션 되어 애님 인스턴스에서 이 값을 클라이언트도 전달받을 수 있다.
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
+	DOREPLIFETIME(UCombatComponent, CombatState);
 	// 현재 들고있는 총알은 그 플레이어 한명에게만 필요한 정보이므로, OwnerOnly를 취한다.
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 }
@@ -148,6 +149,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 	}
 	
 }
+
 
 void UCombatComponent::InterpFOV(float DeltaTime)
 {
@@ -381,7 +383,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::Reload()
 {
-	if(CarriedAmmo > 0)
+	if(CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
 	{
 		ServerReload();
 	}
@@ -391,6 +393,34 @@ void UCombatComponent::ServerReload_Implementation()
 {
 	if(Character == nullptr) return;
 
+	CombatState = ECombatState::ECS_Reloading;
+	HandleReload();
+}
+
+
+void UCombatComponent::FinishReloading()
+{
+	if(Character == nullptr) return;
+	if(Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+}
+
+
+void UCombatComponent::OnRep_CombatState()
+{
+	switch(CombatState)
+	{
+	case ECombatState::ECS_Reloading:
+		HandleReload();
+		break;
+	}
+}
+
+
+void UCombatComponent::HandleReload()
+{
 	Character->PlayReloadMontage();
 }
 
