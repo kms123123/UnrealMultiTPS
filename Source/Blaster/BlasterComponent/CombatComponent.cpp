@@ -191,6 +191,10 @@ void UCombatComponent::FireTimerFinished()
 	{
 		Fire();
 	}
+	if(EquippedWeapon->IsEmpty())
+	{
+		Reload();
+	}
 }
 
 
@@ -221,6 +225,12 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		}
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
+
+		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+		if(Controller)
+		{
+			Controller->SetHUDWeaponTypeText(EquippedWeapon->GetWeaponType());
+		}
 
 		// 사운드 재생
 		if(EquippedWeapon->EquipSound)
@@ -385,6 +395,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if(Controller)
 	{
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+		Controller->SetHUDWeaponTypeText(EquippedWeapon->GetWeaponType());
 	}
 
 	// 사운드 재생
@@ -395,6 +406,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 			EquippedWeapon->EquipSound,
 			Character->GetActorLocation()
 		);
+	}
+
+	if(EquippedWeapon->IsEmpty())
+	{
+		Reload();
 	}
 
 	//무기를 들 때부터 움직임에 따라 몸의 방향이 바뀌지 않고 컨트롤러의 회전에 따라 바뀌도록 한다

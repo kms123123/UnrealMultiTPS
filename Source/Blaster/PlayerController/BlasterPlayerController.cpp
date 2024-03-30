@@ -97,6 +97,31 @@ void ABlasterPlayerController::SetHUDElimText(bool Active)
 	}
 }
 
+void ABlasterPlayerController::SetHUDWeaponTypeText(EWeaponType WeaponType)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->WeaponTypeText;
+
+	if(bHUDValid)
+	{
+		FString WeaponText;
+		switch (WeaponType)
+		{
+		case EWeaponType::EWT_AssaultRifle:
+			WeaponText = FString(TEXT("Assualt Rifle"));
+			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
+			break;
+		case EWeaponType::EWT_MAX:
+			WeaponText = FString(TEXT(""));
+			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
+			break;
+		}
+	}
+}
+
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);

@@ -240,6 +240,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	if(BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDWeaponAmmo(0);
+		BlasterPlayerController->SetHUDWeaponTypeText(EWeaponType::EWT_MAX);
 	}
 	bElimmed = true;
 	PlayElimMontage();
