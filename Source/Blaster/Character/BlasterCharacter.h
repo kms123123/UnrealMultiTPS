@@ -218,6 +218,8 @@ private:
 
 	UPROPERTY()
 	ABlasterPlayerState* BlasterPlayerState;
+
+	bool bInputSet = false;
 	
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);

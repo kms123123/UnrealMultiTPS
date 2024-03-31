@@ -136,6 +136,8 @@ void ABlasterCharacter::PlayReloadMontage()
 			case EWeaponType::EWT_AssaultRifle:
 				SectionName = FName("Rifle");
 				break;
+			default:
+				break;
 		}
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
@@ -315,18 +317,21 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UpdateHUDHealth();
-	
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if(PlayerController)
+	if(const ULocalPlayer* Player = (GEngine && GetWorld()) ? GEngine->GetFirstGamePlayer(GetWorld()) : nullptr)
 	{
-		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-		if(Subsystem)
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		if(PlayerController)
 		{
-			Subsystem->AddMappingContext(InputMappingContext, 0);
+			UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+			if(Subsystem)
+			{
+				Subsystem->AddMappingContext(InputMappingContext, 0);
+				bInputSet = true;
+			}
 		}
 	}
 
+	UpdateHUDHealth();
 	if(HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
@@ -336,6 +341,23 @@ void ABlasterCharacter::BeginPlay()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(HasAuthority() && !bInputSet)
+	{
+		if(const ULocalPlayer* Player = (GEngine && GetWorld()) ? GEngine->GetFirstGamePlayer(GetWorld()) : nullptr)
+		{
+			APlayerController* PlayerController = Cast<APlayerController>(GetController());
+			if(PlayerController)
+			{
+				UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+				if(Subsystem)
+				{
+					Subsystem->AddMappingContext(InputMappingContext, 0);
+					bInputSet = true;
+				}
+			}
+		}
+	}
 
 	//시뮬레이티드프록시가 아니면 매 프레임마다 AimOffset 실행
 	if(GetLocalRole() > ROLE_SimulatedProxy && IsLocallyControlled())
