@@ -88,6 +88,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	//오로지 오너 액터에만 리플리케이션 될 수 있게 설정
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME(ABlasterCharacter, Health);
+	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -263,10 +264,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	// Disable character movement
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
-	if(BlasterPlayerController)
-	{
-		DisableInput(BlasterPlayerController); 
-	}
+	bDisableGameplay = true;
 
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -310,6 +308,10 @@ void ABlasterCharacter::Destroyed()
 	if(ElimBotComponent)
 	{
 		ElimBotComponent->DestroyComponent();
+	}
+	if(Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Destroy();
 	}
 }
 
@@ -359,26 +361,42 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		}
 	}
 
+	RotateInPlace(DeltaTime);
+	
+	HideCameraIfCharacterClose();
+	PollInit();
+}
+
+
+void ABlasterCharacter::RotateInPlace(float DeltaSeconds)
+{
+	if(bDisableGameplay)
+	{
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
 	//시뮬레이티드프록시가 아니면 매 프레임마다 AimOffset 실행
 	if(GetLocalRole() > ROLE_SimulatedProxy && IsLocallyControlled())
 	{
-		AimOffset(DeltaTime);
+		AimOffset(DeltaSeconds);
 	}
+	//시뮬레이티드프록시라면 에임오프셋을 적용하지 않고 특수 회전을 부여한다.
 	else
 	{
-		TimeSinceLastMovementReplication += DeltaTime;
+		TimeSinceLastMovementReplication += DeltaSeconds;
 		if(TimeSinceLastMovementReplication > 0.25f)
 		{
 			OnRep_ReplicatedMovement();
 		}
 		CalculateAO_Pitch();
 	}
-	HideCameraIfCharacterClose();
-	PollInit();
 }
+
 
 void ABlasterCharacter::Move(const FInputActionValue& Value)
 {
+	if(bDisableGameplay) return;
 	const FVector2D VectorValue = Value.Get<FVector2D>();
 
 	const FRotator Rotation = GetControlRotation();
@@ -403,6 +421,7 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 
 void ABlasterCharacter::Jump()
 {
+	if(bDisableGameplay) return;
 	if(bIsCrouched)
 	{
 		UnCrouch();
@@ -453,6 +472,7 @@ void ABlasterCharacter::SimProxiesTurn()
 
 void ABlasterCharacter::EquipButtonPressed()
 {
+	if(bDisableGameplay) return;
 	//서버에서만 실행되어야 하므로 HasAuthority 적용, 아닌 경우에는 Remote Procedure Call 함수 실행
 	if(Combat)
 	{
@@ -469,6 +489,7 @@ void ABlasterCharacter::EquipButtonPressed()
 
 void ABlasterCharacter::CrouchButtonPressed()
 {
+	if(bDisableGameplay) return;
 	if(bIsCrouched)
 	{
 		UnCrouch();
@@ -481,6 +502,7 @@ void ABlasterCharacter::CrouchButtonPressed()
 
 void ABlasterCharacter::ReloadButtonPressed()
 {
+	if(bDisableGameplay) return;
 	if(Combat)
 	{
 		Combat->Reload();
@@ -489,6 +511,7 @@ void ABlasterCharacter::ReloadButtonPressed()
 
 void ABlasterCharacter::AimButtonPressed()
 {
+	if(bDisableGameplay) return;
 	if(Combat)
 	{
 		Combat->SetAiming(true);
@@ -497,6 +520,7 @@ void ABlasterCharacter::AimButtonPressed()
 
 void ABlasterCharacter::AimButtonReleased()
 {
+	if(bDisableGameplay) return;
 	if(Combat)
 	{
 		Combat->SetAiming(false);
@@ -505,6 +529,7 @@ void ABlasterCharacter::AimButtonReleased()
 
 void ABlasterCharacter::FireButtonPressed()
 {
+	if(bDisableGameplay) return;
 	if(Combat)
 	{
 		Combat->FireButtonPressed(true);
@@ -513,6 +538,7 @@ void ABlasterCharacter::FireButtonPressed()
 
 void ABlasterCharacter::FireButtonReleased()
 {
+	if(bDisableGameplay) return;
 	if(Combat)
 	{
 		Combat->FireButtonPressed(false);
