@@ -6,6 +6,7 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
@@ -13,10 +14,12 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 	APawn* OwnerPawn = Cast<APawn>(GetOwner());
 	if(OwnerPawn == nullptr) return;
+	// Simulated Proxy에서는 Null로 설정된다. 따라서, ApplyDamage에서 HasAuthority를 체크하는 동시에 거기에서만
+	// InstigatorConroller null check을 시행한다.
 	AController* InstigatorController = OwnerPawn->GetController();
 
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlash"));
-	if(MuzzleFlashSocket && InstigatorController)
+	if(MuzzleFlashSocket)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
@@ -24,6 +27,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 		FHitResult FireHit;
 		UWorld* World = GetWorld();
+		FVector BeamEnd = End;
 		if(World)
 		{
 			World->LineTraceSingleByChannel(
@@ -34,19 +38,17 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			);
 			if(FireHit.bBlockingHit)
 			{
+				BeamEnd = FireHit.ImpactPoint;
 				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-				if(BlasterCharacter)
+				if(BlasterCharacter && HasAuthority() && InstigatorController)
 				{
-					if(HasAuthority())
-					{
-						UGameplayStatics::ApplyDamage(
+					UGameplayStatics::ApplyDamage(
 							BlasterCharacter,
 							Damage,
 							InstigatorController,
 							this,
 							UDamageType::StaticClass()
 						);
-					}
 				}
 
 				if(ImpactParticle)
@@ -55,8 +57,20 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 						this,
 						ImpactParticle,
 						FireHit.ImpactPoint,
-						FireHit.ImpactNormal.Rotation()
+						FireHit.ImpactNormal.Rotation()      
 					);
+				}
+				if(BeamParticle)
+				{
+					UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+						this,
+						BeamParticle,
+						SocketTransform.GetLocation()
+					);
+					if(Beam)
+					{
+						Beam->SetVectorParameter(FName("Target"), BeamEnd);
+					}
 				}
 			}
 		}
