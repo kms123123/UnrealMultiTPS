@@ -17,6 +17,7 @@ AWeapon::AWeapon()
 	PrimaryActorTick.bCanEverTick = true;
 	//레플리케이션 허용
 	bReplicates = true;
+	AActor::SetReplicateMovement(true);
 	
 	//스켈레탈 메쉬 생성
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));

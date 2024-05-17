@@ -4,10 +4,8 @@
 #include "Projectile.h"
 
 #include "Components/BoxComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
-#include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Blaster.h"
 
 AProjectile::AProjectile()
@@ -31,9 +29,7 @@ AProjectile::AProjectile()
 	// 원통 콜라이더도 폰 채널이기 때문에, 커스텀 채널을 따로 사용한다.
 	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECR_Block);
 	
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
-	//움직이는 방향에 맞춰 회전도 변하도록 설정
-	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+
 }
 
 void AProjectile::BeginPlay()
