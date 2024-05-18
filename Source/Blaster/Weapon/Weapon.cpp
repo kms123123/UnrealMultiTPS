@@ -4,6 +4,7 @@
 #include "Weapon.h"
 
 #include "Casing.h"
+#include "Blaster/BlasterComponent/CombatComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
@@ -188,6 +189,11 @@ void AWeapon::SpendRound()
 
 void AWeapon::OnRep_Ammo()
 {
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if(BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombat() && IsFull() && WeaponType == EWeaponType::EWT_Shotgun)
+	{
+		BlasterOwnerCharacter->GetCombat()->JumpToShotgunEnd();
+	}
 	SetHUDAmmo();
 }
 
@@ -262,4 +268,9 @@ void AWeapon::SetWeaponState(EWeaponState State)
 bool AWeapon::IsEmpty()
 {
 	return Ammo <= 0;
+}
+
+bool AWeapon::IsFull()
+{
+	return Ammo == MagCapacity;
 }
