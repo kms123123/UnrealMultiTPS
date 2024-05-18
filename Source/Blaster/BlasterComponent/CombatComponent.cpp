@@ -201,6 +201,7 @@ void UCombatComponent::FireTimerFinished()
 
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
+	if(Character == nullptr || EquippedWeapon == nullptr) return;
 	bAiming = bIsAiming;
 	//Server키워드 RPC는 서버에서 호출해도 똑같이 실행되므로 문제가 없다.
 	ServerSetAiming(bIsAiming);
@@ -209,6 +210,11 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	if(Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+	// 스나이퍼 라이플 줌인 애니메이션 로직
+	if(Character->IsLocallyControlled() && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
+	{
+		Character->ShowSniperScopeWidget(bIsAiming);
 	}
 }
 

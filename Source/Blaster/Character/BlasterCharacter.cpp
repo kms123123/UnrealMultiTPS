@@ -308,6 +308,17 @@ void ABlasterCharacter::MulticastElim_Implementation()
 			GetActorLocation()
 		);
 	}
+	bool bHideSniperScope = IsLocallyControlled()
+							&& Combat
+							&& Combat->bAiming
+							&& Combat->EquippedWeapon
+							&& Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle;
+	
+	// 죽었을 때 스코프 비추지 않게
+	if(bHideSniperScope)
+	{
+		ShowSniperScopeWidget(false);
+	}
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -436,6 +447,12 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 
 	if(Controller)
 	{
+		if(IsLocallyControlled() && Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle && Combat->bAiming)
+		{
+			AddControllerYawInput(VectorValue.Y / 2);
+			AddControllerPitchInput(VectorValue.X / 2);
+			return;
+		}
 		AddControllerYawInput(VectorValue.Y);
 		AddControllerPitchInput(VectorValue.X);
 	}
