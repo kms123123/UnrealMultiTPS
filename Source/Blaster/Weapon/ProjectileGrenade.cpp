@@ -2,6 +2,8 @@
 
 
 #include "ProjectileGrenade.h"
+
+#include "Blaster/Character/BlasterCharacter.h"
 #include "Sound/SoundCue.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -37,6 +39,12 @@ void AProjectileGrenade::BeginPlay()
 
 void AProjectileGrenade::OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
 {
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(ImpactResult.GetActor());
+	if(BlasterCharacter)
+	{
+		Destroy();
+	}
+	
 	if(BounceSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(

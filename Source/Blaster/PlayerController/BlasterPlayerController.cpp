@@ -137,6 +137,30 @@ void ABlasterPlayerController::SetHUDWeaponTypeText(EWeaponType WeaponType)
 			WeaponText = FString(TEXT("Assualt Rifle"));
 			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
 			break;
+		case EWeaponType::EWT_RocketLauncher:
+			WeaponText = FString(TEXT("Rocket Launcher"));
+			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
+			break;
+		case EWeaponType::EWT_Shotgun:
+			WeaponText = FString(TEXT("Shotgun"));
+			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
+			break;
+		case EWeaponType::EWT_SniperRifle:
+			WeaponText = FString(TEXT("Sniper Rifle"));
+			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
+			break;
+		case EWeaponType::EWT_Pistol:
+			WeaponText = FString(TEXT("Pistol"));
+			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
+			break;
+		case EWeaponType::EWT_GrenadeLauncher:
+			WeaponText = FString(TEXT("Grenade Launcher"));
+			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
+			break;
+		case EWeaponType::EWT_SubmachineGun:
+			WeaponText = FString(TEXT("Submachine Gun"));
+			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
+			break;
 		case EWeaponType::EWT_MAX:
 			WeaponText = FString(TEXT(""));
 			BlasterHUD->CharacterOverlay->WeaponTypeText->SetText(FText::FromString(WeaponText));
