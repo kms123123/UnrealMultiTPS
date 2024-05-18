@@ -3,6 +3,7 @@
 
 #include "Projectile.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Components/BoxComponent.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
@@ -55,6 +56,37 @@ void AProjectile::BeginPlay()
 	}
 }
 
+void AProjectile::DestoryTimerFinished()
+{
+	Destroy();
+}
+
+void AProjectile::ExplodeDamage()
+{
+	APawn* FiringPawn = GetInstigator();
+	if(FiringPawn && HasAuthority())
+	{
+		AController* FiringController = FiringPawn->GetController();
+		if(FiringController)
+		{
+			// 스플래시 데미지를 주는 함수
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				this,
+				Damage,
+				10.f,
+				GetActorLocation(),
+				DamageInnerRadius,
+				DamageOuterRadius,
+				1.f, // 데미지 감소함수, 1.f이면 linear하게 감소
+				UDamageType::StaticClass(),
+				TArray<AActor*>(),
+				this,
+				FiringController // GameMode 클래스에 전달해주기 위함
+			);
+		}
+	}
+}
+
 //파괴되면 클라이언트에서도 실행되기 때문에 여기서 파티클이나 사운드를 재생시킨다.
 void AProjectile::Destroyed()
 {
@@ -72,10 +104,36 @@ void AProjectile::Destroyed()
 	}
 }
 
+void AProjectile::StartDestoryTimer()
+{
+	GetWorldTimerManager().SetTimer(
+		DestoryTimer,
+		this,
+		&AProjectile::DestoryTimerFinished,
+		DestroyTime
+	);
+}
+
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                         FVector NormalImpulse, const FHitResult& Hit)
 {
 	Destroy();
+}
+
+void AProjectile::SpawnTrailSystem()
+{
+	if(TrailSystem)
+	{
+		TrailSystemComponent =  UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem,
+			GetRootComponent(),
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
 }
 
 void AProjectile::Tick(float DeltaTime)

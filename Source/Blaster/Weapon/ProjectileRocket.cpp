@@ -13,9 +13,9 @@
 
 AProjectileRocket::AProjectileRocket()
 {
-	RocketMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rocket Mesh"));
-	RocketMesh->SetupAttachment(RootComponent);
-	RocketMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rocket Mesh"));
+	ProjectileMesh->SetupAttachment(RootComponent);
+	ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	RocketMovementComponent = CreateDefaultSubobject<URocketMovementComponent>(TEXT("Rocket Movement Component"));
 	RocketMovementComponent->bRotationFollowsVelocity = true;
@@ -36,18 +36,8 @@ void AProjectileRocket::BeginPlay()
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileRocket::OnHit);
 	}
 
-	if(TrailSystem)
-	{
-		TrailSystemComponent =  UNiagaraFunctionLibrary::SpawnSystemAttached(
-			TrailSystem,
-			GetRootComponent(),
-			FName(),
-			GetActorLocation(),
-			GetActorRotation(),
-			EAttachLocation::KeepWorldPosition,
-			false
-		);
-	}
+	SpawnTrailSystem();
+	
 	if(ProjectileLoop && LoopingSoundAttenuation)
 	{
 		ProjectileLoopComponent = UGameplayStatics::SpawnSoundAttached(
@@ -72,36 +62,10 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
                               FVector NormalImpulse, const FHitResult& Hit)
 {
 	if(OtherActor == GetOwner()) return;
-	// 자신의 Owner을 return
-	APawn* FiringPawn = GetInstigator();
-	if(FiringPawn && HasAuthority())
-	{
-		AController* FiringController = FiringPawn->GetController();
-		if(FiringController)
-		{
-			// 스플래시 데미지를 주는 함수
-			UGameplayStatics::ApplyRadialDamageWithFalloff(
-				this,
-				Damage,
-				10.f,
-				GetActorLocation(),
-				200.f,
-				500.f,
-				1.f, // 데미지 감소함수, 1.f이면 linear하게 감소
-				UDamageType::StaticClass(),
-				TArray<AActor*>(),
-				this,
-				FiringController // GameMode 클래스에 전달해주기 위함
-			);
-		}
-	}
 
-	GetWorldTimerManager().SetTimer(
-		DestoryTimer,
-		this,
-		&AProjectileRocket::DestoryTimerFinished,
-		DestroyTime
-	);
+	ExplodeDamage();
+
+	StartDestoryTimer();
 
 	//벽 파티클 소환
 	if(ImpactParticle)
@@ -114,9 +78,9 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 	}
-	if(RocketMesh)
+	if(ProjectileMesh)
 	{
-		RocketMesh->SetVisibility(false);
+		ProjectileMesh->SetVisibility(false);
 	}
 	if(CollisionBox)
 	{
@@ -132,7 +96,3 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	}
 }
 
-void AProjectileRocket::DestoryTimerFinished()
-{
-	Destroy();
-}
