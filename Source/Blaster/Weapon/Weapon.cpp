@@ -30,6 +30,11 @@ AWeapon::AWeapon()
 	WeaponMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
+	// 매터리얼의 변경점을 렌더링에 적용시킨다.
+	WeaponMesh->MarkRenderStateDirty();
+	EnableCustomDepth(true);
+
 	//스피어 컴포넌트 생성, 해당 컴포넌트는 서버 컴퓨터에서만 충돌여부를 확인하기 때문에 클라이언트에서는 기본적으로 충돌을 무시해야함
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
 	AreaSphere->SetupAttachment(GetRootComponent());
@@ -38,6 +43,15 @@ AWeapon::AWeapon()
 
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(GetRootComponent());
+}
+
+void AWeapon::EnableCustomDepth(bool bEnable)
+{
+	if(WeaponMesh)
+	{
+		WeaponMesh->SetRenderCustomDepth(bEnable);
+		WeaponMesh->MarkRenderStateDirty();
+	}
 }
 
 void AWeapon::BeginPlay()
@@ -168,6 +182,8 @@ void  AWeapon::OnRep_WeaponState()
 			WeaponMesh->SetEnableGravity(true);
 			WeaponMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 		}
+		EnableCustomDepth(false);
+
 		break;
 	case EWeaponState::EWS_Dropped:
 		// 물리효과를 주어 떨어뜨림
@@ -177,6 +193,11 @@ void  AWeapon::OnRep_WeaponState()
 		WeaponMesh->SetCollisionResponseToAllChannels(ECR_Block);
 		WeaponMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 		WeaponMesh->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
+		// 매터리얼의 변경점을 렌더링에 적용시킨다.
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
 		break;
 	}
 }
@@ -246,6 +267,8 @@ void AWeapon::SetWeaponState(EWeaponState State)
 			WeaponMesh->SetEnableGravity(true);
 			WeaponMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 		}
+
+		EnableCustomDepth(false);
 		break;
 	case EWeaponState::EWS_Dropped:
 		// 서버에서만 충돌을 허용
@@ -260,6 +283,11 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		WeaponMesh->SetCollisionResponseToAllChannels(ECR_Block);
 		WeaponMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 		WeaponMesh->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+		
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
+		// 매터리얼의 변경점을 렌더링에 적용시킨다.
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
 		break;
 	}
 	
